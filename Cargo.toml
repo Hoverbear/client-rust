@@ -5,11 +5,17 @@ keywords = ["TiKV", "KV", "distributed-systems"]
 license = "Apache-2.0"
 authors = ["The TiKV Project Authors"]
 repository = "https://github.com/tikv/client-rust"
-description = "The rust language implementation of TiKV client."
+description = "Official TiKV Client & API bindings."
 edition = "2018"
 
 [features]
 default = []
+# Enable the `tikv-client` binary.
+cli = [
+    "clap",
+    "env_logger",
+    "failure/backtrace",
+]
 # Enable integration tests with a running TiKV and PD instance.
 # Use $PD_ADDRS, comma separated, to set the addresses the tests use. 
 integration-tests = []
@@ -17,9 +23,16 @@ integration-tests = []
 [lib]
 name = "tikv_client"
 
+[[bin]]
+name = "tikv-client"
+path = "src/client/main.rs"
+required-features = ["cli"]
+
 [dependencies]
 regex = "1"
 derive-new = "0.5"
+clap = { version = "2.33", optional = true }
+env_logger = { version = "0.6.1", optional = true }
 failure = "0.1"
 futures-preview = { version = "0.3.0-alpha.15", features = ["compat"] }
 grpcio = { version = "0.5.0-alpha", features = [ "secure", "prost-codec" ], default-features = false }
@@ -39,7 +52,6 @@ default-features = false
 features = ["push", "process"]
 
 [dev-dependencies]
-clap = "2.32"
 tempdir = "0.3"
 runtime = "0.3.0-alpha.3"
 runtime-tokio = "0.3.0-alpha.3"
