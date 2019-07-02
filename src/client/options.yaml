@@ -1,0 +1,72 @@
+name: tikv-cli-client
+version: "0.0.1"
+about: Options for the Rust Command Line Client of TiKV
+author: Dennis C. <denniscampagna@gmail.com>
+
+# All args must be defined in the 'args:' list where the name of the arg is the key to a hash object
+args:
+  - pd_endpoints:
+      help: "A list of pd endpoints."
+      short: e
+      long: endpoints
+      takes_value: true
+      multiple: true
+  - ca_path:
+      help: "The path of the CA file for TLS."
+      long: ca-path
+      takes_value: true
+  - cert_path:
+      help: "The path of the certificate file for TLS."
+      long: cert-path
+      takes_value: true
+      requires: ca_path
+  - key_path:
+      help: "The path of the key file for TLS."
+      long: key-path
+      takes_value: true
+      requires: cert_path
+  - logging:
+      help: "Level of logging to use. Default: info"
+      short: l
+      long: logging
+      takes_value: true
+      possible_values:
+        - critical
+        - error
+        - warning
+        - info
+        - debug
+        - trace
+  - minify:
+      help: "If the output JSON should be minified. Default: false"
+      short: M
+      long: minify
+  - mode:
+      help: "The mode the client should be in. Default: transaction"
+      short: m
+      long: mode
+      takes_value: true
+      possible_values:
+        - raw
+        - transaction
+  - output_durations:
+      help: "If the tool should output on stderr the duration of commands. Default: true"
+      long: output-durations
+  - key_encoding: # Used _ instead of - to keep the same convention used before
+      help: "Control key encoding. Default: utf-8"
+      long: key-encoding
+      takes_value: true
+      possible_values:
+        - utf-8
+        - ukf
+        - protobuffer
+        - hex
+  - value_encoding: # Used _ instead of - to keep the same convention used before
+      help: "Control value encoding. Default: utf-8"
+      long: value-encoding
+      takes_value: true
+      possible_values:
+        - utf-8
+        - ukf
+        - protobuffer
+        - hex

@@ -1,0 +1,18 @@
+[connection]
+pd_endpoints = [
+    "127.0.0.1:2379",
+    "127.0.0.2:2379",
+]
+
+[tls]
+ca_path = "./rsa.ca"
+cert_path = "./rsa.cert"
+key_path = "./rsa.key"
+
+[client]
+logging = "info"
+minify = false
+mode = "transaction"
+output_durations = true
+key_encoding = "utf-8"
+value_encoding = "utf-8"
