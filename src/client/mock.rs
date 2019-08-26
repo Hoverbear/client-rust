@@ -141,11 +141,8 @@ fn main() {
     ** Connection to TiVK
     */
 
-    // Get an unresolved connection.
-    let connect = Client::connect(config);
-
-    // Resolve connection
-    // ...
+    // Create a new connection
+    let client = RawClient::new(config).unwrap();
 
     // Setup client options
     let client_opts: ClientOptions = create_client_opts_from_arguments(&matches);
