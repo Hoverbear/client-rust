@@ -14,8 +14,10 @@ default = []
 cli = [
     "clap",
     "env_logger",
+    "rustyline",
     "failure/backtrace",
 ]
+yaml = []
 # Enable integration tests with a running TiKV and PD instance.
 # Use $PD_ADDRS, comma separated, to set the addresses the tests use. 
 integration-tests = []
@@ -25,12 +27,12 @@ name = "tikv_client"
 
 [[bin]]
 name = "tikv-client"
-path = "src/client/main.rs"
-required-features = ["cli"]
+path = "src/client/mock.rs"
+required-features = ["cli", "yaml"]
 
 [dependencies]
 derive-new = "0.5"
-clap = { version = "2.33", optional = true }
+clap = { version = "2.33", optional = true, features = ["yaml"] }
 env_logger = { version = "0.6.1", optional = true }
 failure = "0.1"
 futures-preview = { version = "0.3.0-alpha.18", features = ["compat", "async-await", "nightly"] }
@@ -42,6 +44,7 @@ regex = "1"
 serde = "1.0"
 serde_derive = "1.0"
 tokio-timer = "0.2"
+rustyline = { version = "5.0.0", optional = true }
 
 [dependencies.prometheus]
 version = "0.4.2"

@@ -212,9 +212,3 @@ fn main() {
         _ => {}
     }
 }
-
-#[cfg(not(feature = "yaml"))]
-fn main() {
-    println!("YAML feature is disabled.");
-    println!("Pass --features yaml to cargo when building.");
-}
