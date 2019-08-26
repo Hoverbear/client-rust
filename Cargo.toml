@@ -57,3 +57,4 @@ runtime = { version = "0.3.0-alpha.6", default-features = false }
 runtime-tokio = "0.3.0-alpha.5"
 proptest = "0.9"
 proptest-derive = "0.1.0"
+clap = { version = "2.33", features = ["yaml"] }
