@@ -32,7 +32,7 @@ required-features = ["cli", "yaml"]
 
 [dependencies]
 derive-new = "0.5"
-clap = { version = "2.33", optional = true, features = ["yaml"] }
+clap = { version = "^2.33", optional = true, features = ["yaml"] }
 env_logger = { version = "0.6.1", optional = true }
 failure = "0.1"
 futures-preview = { version = "0.3.0-alpha.18", features = ["compat", "async-await", "nightly"] }
@@ -57,4 +57,4 @@ runtime = { version = "0.3.0-alpha.6", default-features = false }
 runtime-tokio = "0.3.0-alpha.5"
 proptest = "0.9"
 proptest-derive = "0.1.0"
-clap = { version = "2.33", features = ["yaml"] }
+clap = { version = "^2.33", features = ["yaml"] }
