@@ -10,11 +10,12 @@
 //! **Warning:** It is not advisable to use both raw and transactional functionality in the same keyspace.
 //!
 
-pub use self::client::{Client, Connect};
+pub use self::client::Client;
 
 use std::fmt;
 
 mod client;
+mod requests;
 
 /// A [`ColumnFamily`](ColumnFamily) is an optional parameter for [`raw::Client`](Client) requests.
 ///
@@ -31,7 +32,7 @@ mod client;
 /// The best (and only) way to create a [`ColumnFamily`](ColumnFamily) is via the `From` implementation:
 ///
 /// ```rust
-/// # use tikv_client::raw::ColumnFamily;
+/// # use tikv_client::ColumnFamily;
 ///
 /// let cf = ColumnFamily::from("write");
 /// let cf = ColumnFamily::from(String::from("write"));
@@ -53,5 +54,15 @@ impl<T: Into<String>> From<T> for ColumnFamily {
 impl fmt::Display for ColumnFamily {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.0.fmt(f)
+    }
+}
+
+trait RawRpcRequest: Default {
+    fn set_cf(&mut self, cf: String);
+
+    fn maybe_set_cf(&mut self, cf: Option<ColumnFamily>) {
+        if let Some(cf) = cf {
+            self.set_cf(cf.to_string());
+        }
     }
 }

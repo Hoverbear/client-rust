@@ -1,146 +1,162 @@
-// Copyright 2019 TiKV Project Authors. Licensed under Apache-2.0.
+use crate::{
+    kv_client::{KvClient, RpcFnType, Store},
+    pd::PdClient,
+    request::KvRequest,
+    transaction::Timestamp,
+    Error, Key, KvPair, Result, Value,
+};
 
-use super::Transaction;
-use crate::{Error, Key, KvPair, Value};
-
-use derive_new::new;
+use futures::future::BoxFuture;
 use futures::prelude::*;
-use futures::task::{Context, Poll};
-use std::pin::Pin;
+use futures::stream::BoxStream;
+use kvproto::kvrpcpb;
+use kvproto::tikvpb::TikvClient;
+use std::mem;
+use std::sync::Arc;
 
-/// An unresolved [`Transaction::scan`](Transaction::scan) request.
-///
-/// Once resolved this request will result in a scanner over the given keys.
-pub struct Scanner;
+impl KvRequest for kvrpcpb::GetRequest {
+    type Result = Option<Value>;
+    type RpcResponse = kvrpcpb::GetResponse;
+    type KeyData = Key;
+    const REQUEST_NAME: &'static str = "kv_get";
+    const RPC_FN: RpcFnType<Self, Self::RpcResponse> = TikvClient::kv_get_async_opt;
 
-impl Stream for Scanner {
-    type Item = Result<KvPair, Error>;
+    fn make_rpc_request<KvC: KvClient>(&self, key: Self::KeyData, store: &Store<KvC>) -> Self {
+        let mut req = store.request::<Self>();
+        req.set_key(key.into());
+        req.set_version(self.version);
 
-    fn poll_next(self: Pin<&mut Self>, _cx: &mut Context) -> Poll<Option<Self::Item>> {
-        unimplemented!()
+        req
+    }
+
+    fn store_stream<PdC: PdClient>(
+        &mut self,
+        pd_client: Arc<PdC>,
+    ) -> BoxStream<'static, Result<(Self::KeyData, Store<PdC::KvClient>)>> {
+        let key = mem::replace(&mut self.key, Vec::default()).into();
+        pd_client
+            .store_for_key(&key)
+            .map_ok(move |store| (key, store))
+            .into_stream()
+            .boxed()
+    }
+
+    fn map_result(mut resp: Self::RpcResponse) -> Self::Result {
+        let result: Value = resp.take_value().into();
+        if resp.not_found {
+            None
+        } else {
+            Some(result)
+        }
+    }
+
+    fn reduce(
+        results: BoxStream<'static, Result<Self::Result>>,
+    ) -> BoxFuture<'static, Result<Self::Result>> {
+        results
+            .into_future()
+            .map(|(f, _)| f.expect("no results should be impossible"))
+            .boxed()
     }
 }
 
-/// An unresolved [`Transaction::get`](Transaction::get) request.
-///
-/// Once resolved this request will result in the fetching of the value associated with the given
-/// key.
-#[derive(new)]
-pub struct Get {
-    key: Key,
+pub fn new_mvcc_get_request(key: impl Into<Key>, timestamp: Timestamp) -> kvrpcpb::GetRequest {
+    let mut req = kvrpcpb::GetRequest::default();
+    req.set_key(key.into().into());
+    req.set_version(timestamp.into_version());
+    req
 }
 
-impl Future for Get {
-    type Output = Result<Value, Error>;
+impl KvRequest for kvrpcpb::BatchGetRequest {
+    type Result = Vec<KvPair>;
+    type RpcResponse = kvrpcpb::BatchGetResponse;
+    type KeyData = Vec<Key>;
+    const REQUEST_NAME: &'static str = "kv_batch_get";
+    const RPC_FN: RpcFnType<Self, Self::RpcResponse> = TikvClient::kv_batch_get_async_opt;
 
-    fn poll(self: Pin<&mut Self>, _cx: &mut Context) -> Poll<Self::Output> {
-        let _key = &self.key;
-        unimplemented!()
+    fn make_rpc_request<KvC: KvClient>(&self, keys: Self::KeyData, store: &Store<KvC>) -> Self {
+        let mut req = store.request::<Self>();
+        req.set_keys(keys.into_iter().map(Into::into).collect());
+        req.set_version(self.version);
+
+        req
+    }
+
+    fn store_stream<PdC: PdClient>(
+        &mut self,
+        pd_client: Arc<PdC>,
+    ) -> BoxStream<'static, Result<(Self::KeyData, Store<PdC::KvClient>)>> {
+        let keys = mem::replace(&mut self.keys, Vec::default());
+
+        pd_client
+            .clone()
+            .group_keys_by_region(keys.into_iter().map(Into::into))
+            .and_then(move |(region_id, key)| {
+                pd_client
+                    .clone()
+                    .store_for_id(region_id)
+                    .map_ok(move |store| (key, store))
+            })
+            .boxed()
+    }
+
+    fn map_result(mut resp: Self::RpcResponse) -> Self::Result {
+        resp.take_pairs().into_iter().map(Into::into).collect()
+    }
+
+    fn reduce(
+        results: BoxStream<'static, Result<Self::Result>>,
+    ) -> BoxFuture<'static, Result<Self::Result>> {
+        results.try_concat().boxed()
     }
 }
 
-/// An unresolved [`Transaction::batch_get`](Transaction::batch_get) request.
-///
-/// Once resolved this request will result in the fetching of the values associated with the given
-/// keys.
-#[derive(new)]
-pub struct BatchGet {
+pub fn new_mvcc_get_batch_request(
     keys: Vec<Key>,
+    timestamp: Timestamp,
+) -> kvrpcpb::BatchGetRequest {
+    let mut req = kvrpcpb::BatchGetRequest::default();
+    req.set_keys(keys.into_iter().map(Into::into).collect());
+    req.set_version(timestamp.into_version());
+    req
 }
 
-impl Future for BatchGet {
-    type Output = Result<Vec<KvPair>, Error>;
+impl KvRequest for kvrpcpb::ScanRequest {
+    type Result = Vec<KvPair>;
+    type RpcResponse = kvrpcpb::ScanResponse;
+    type KeyData = (Key, Key);
+    const REQUEST_NAME: &'static str = "kv_scan";
+    const RPC_FN: RpcFnType<Self, Self::RpcResponse> = TikvClient::kv_scan_async_opt;
 
-    fn poll(self: Pin<&mut Self>, _cx: &mut Context) -> Poll<Self::Output> {
-        let _keys = &self.keys;
-        unimplemented!()
+    fn make_rpc_request<KvC: KvClient>(
+        &self,
+        (start_key, end_key): Self::KeyData,
+        store: &Store<KvC>,
+    ) -> Self {
+        let mut req = store.request::<Self>();
+        req.set_start_key(start_key.into());
+        req.set_end_key(end_key.into());
+        req.set_limit(self.limit);
+        req.set_key_only(self.key_only);
+        req.set_version(self.version);
+
+        req
     }
-}
 
-/// An unresolved [`Transaction::commit`](Transaction::commit) request.
-///
-/// Once resolved this request will result in the committing of the transaction.
-#[derive(new)]
-pub struct Commit {
-    txn: Transaction,
-}
-
-impl Future for Commit {
-    type Output = Result<(), Error>;
-
-    fn poll(self: Pin<&mut Self>, _cx: &mut Context) -> Poll<Self::Output> {
-        let _txn = &self.txn;
-        unimplemented!()
+    fn store_stream<PdC: PdClient>(
+        &mut self,
+        _pd_client: Arc<PdC>,
+    ) -> BoxStream<'static, Result<(Self::KeyData, Store<PdC::KvClient>)>> {
+        future::err(Error::unimplemented()).into_stream().boxed()
     }
-}
 
-/// An unresolved [`Transaction::rollback`](Transaction::rollback) request.
-///
-/// Once resolved this request will result in the rolling back of the transaction.
-#[derive(new)]
-pub struct Rollback {
-    txn: Transaction,
-}
-
-impl Future for Rollback {
-    type Output = Result<(), Error>;
-
-    fn poll(self: Pin<&mut Self>, _cx: &mut Context) -> Poll<Self::Output> {
-        let _txn = &self.txn;
-        unimplemented!()
+    fn map_result(mut resp: Self::RpcResponse) -> Self::Result {
+        resp.take_pairs().into_iter().map(Into::into).collect()
     }
-}
 
-/// An unresolved [`Transaction::lock_keys`](Transaction::lock_keys) request.
-///
-/// Once resolved this request will result in the locking of the given keys.
-#[derive(new)]
-pub struct LockKeys {
-    keys: Vec<Key>,
-}
-
-impl Future for LockKeys {
-    type Output = Result<(), Error>;
-
-    fn poll(self: Pin<&mut Self>, _cx: &mut Context) -> Poll<Self::Output> {
-        let _keys = &self.keys;
-        unimplemented!()
-    }
-}
-
-/// An unresolved [`Transaction::set`](Transaction::set) request.
-///
-/// Once resolved this request will result in the setting of the value associated with the given
-/// key.
-#[derive(new)]
-pub struct Set {
-    key: Key,
-    value: Value,
-}
-
-impl Future for Set {
-    type Output = Result<(), Error>;
-
-    fn poll(self: Pin<&mut Self>, _cx: &mut Context) -> Poll<Self::Output> {
-        let _key = &self.key;
-        let _value = &self.value;
-        unimplemented!()
-    }
-}
-
-/// An unresolved [`Transaction::delete`](Transaction::delete) request.
-///
-/// Once resolved this request will result in the deletion of the given key.
-#[derive(new)]
-pub struct Delete {
-    key: Key,
-}
-
-impl Future for Delete {
-    type Output = Result<(), Error>;
-
-    fn poll(self: Pin<&mut Self>, _cx: &mut Context) -> Poll<Self::Output> {
-        let _key = &self.key;
-        unimplemented!()
+    fn reduce(
+        results: BoxStream<'static, Result<Self::Result>>,
+    ) -> BoxFuture<'static, Result<Self::Result>> {
+        results.try_concat().boxed()
     }
 }

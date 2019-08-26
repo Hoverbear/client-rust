@@ -1,20 +1,18 @@
 // Copyright 2018 TiKV Project Authors. Licensed under Apache-2.0.
 
-// TODO: Remove this when txn is done.
-#![allow(dead_code)]
-
 use derive_new::new;
-pub use kvproto::metapb::{Peer, Store};
-use kvproto::{kvrpcpb, metapb};
+use kvproto::{kvrpcpb, metapb, pdpb};
 
-pub use crate::rpc::pd::client::PdClient;
 use crate::{Error, Key, Result};
+pub use client::{PdClient, PdRpcClient};
+pub use cluster::Cluster;
+pub use retry::RetryClient;
 
-#[macro_use]
-mod leader;
 mod client;
-mod context;
-mod request;
+#[macro_use]
+mod cluster;
+mod retry;
+mod timestamp;
 
 pub type RegionId = u64;
 pub type StoreId = u64;
@@ -29,10 +27,11 @@ pub struct RegionVerId {
 #[derive(new, Clone, Default, Debug, PartialEq)]
 pub struct Region {
     pub region: metapb::Region,
-    pub leader: Option<Peer>,
+    pub leader: Option<metapb::Peer>,
 }
 
 impl Region {
+    #[allow(dead_code)]
     pub fn switch_peer(&mut self, _to: StoreId) -> Result<()> {
         unimplemented!()
     }
@@ -41,7 +40,7 @@ impl Region {
         let key: &[u8] = key.into();
         let start_key = self.region.get_start_key();
         let end_key = self.region.get_end_key();
-        start_key <= key && (end_key > key || end_key.is_empty())
+        key >= start_key && (key < end_key || end_key.is_empty())
     }
 
     pub fn context(&self) -> Result<kvrpcpb::Context> {
@@ -57,14 +56,19 @@ impl Region {
             })
     }
 
-    pub fn start_key(&self) -> &[u8] {
-        self.region.get_start_key()
+    pub fn start_key(&self) -> Key {
+        self.region.get_start_key().to_vec().into()
     }
 
-    pub fn end_key(&self) -> &[u8] {
-        self.region.get_end_key()
+    pub fn end_key(&self) -> Key {
+        self.region.get_end_key().to_vec().into()
     }
 
+    pub fn range(&self) -> (Key, Key) {
+        (self.start_key(), self.end_key())
+    }
+
+    #[allow(dead_code)]
     pub fn ver_id(&self) -> RegionVerId {
         let region = &self.region;
         let epoch = region.get_region_epoch();
@@ -79,21 +83,33 @@ impl Region {
         self.region.get_id()
     }
 
-    pub fn peer(&self) -> Result<Peer> {
+    pub fn get_store_id(&self) -> Result<StoreId> {
         self.leader
             .as_ref()
-            .map(Clone::clone)
-            .map(Into::into)
+            .cloned()
             .ok_or_else(|| Error::stale_epoch(None))
-    }
-
-    pub fn meta(&self) -> metapb::Region {
-        self.region.clone()
+            .map(|s| s.get_store_id())
     }
 }
 
-#[derive(Eq, PartialEq, Debug)]
-pub struct PdTimestamp {
-    pub physical: i64,
-    pub logical: i64,
+trait PdResponse {
+    fn header(&self) -> &pdpb::ResponseHeader;
+}
+
+impl PdResponse for pdpb::GetStoreResponse {
+    fn header(&self) -> &pdpb::ResponseHeader {
+        self.get_header()
+    }
+}
+
+impl PdResponse for pdpb::GetRegionResponse {
+    fn header(&self) -> &pdpb::ResponseHeader {
+        self.get_header()
+    }
+}
+
+impl PdResponse for pdpb::GetAllStoresResponse {
+    fn header(&self) -> &pdpb::ResponseHeader {
+        self.get_header()
+    }
 }

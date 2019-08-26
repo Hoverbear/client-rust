@@ -6,9 +6,9 @@ os:
   # - windows # TODO: https://github.com/pingcap/kvproto/issues/355
   - osx
 rust:
-  # Requires nightly for now, stable can be re-enabled when 1.36 is stable.
+  # Requires nightly for now, stable can be re-enabled when async/await is stable.
   # - stable
-  - nightly-2019-05-22
+  - nightly
 env:
   global:
     - RUST_BACKTRACE=1
@@ -28,9 +28,6 @@ addons:
       - go
 
 install:
-  # FIXME(#55) Remove when Clippy is fixed in current nightly
-  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then rustup toolchain install nightly-2019-05-22; fi
-  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then rustup default nightly-2019-05-22; fi
   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then rustup component add rustfmt; fi
   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then rustup component add clippy; fi
   - if [[ $TRAVIS_OS_NAME == "windows" ]]; then choco install golang cmake strawberryperl protoc; fi
@@ -48,4 +45,4 @@ script:
   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then docker ps; fi
   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then docker logs pd; fi
   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then docker logs kv; fi
-  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then PD_ADDR="127.0.0.1:2379" cargo test --all --features integration-tests -- --nocapture; fi
+  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then PD_ADDRS="127.0.0.1:2379" cargo test --all --features integration-tests -- --nocapture; fi

@@ -29,22 +29,19 @@ path = "src/client/main.rs"
 required-features = ["cli"]
 
 [dependencies]
-regex = "1"
 derive-new = "0.5"
 clap = { version = "2.33", optional = true }
 env_logger = { version = "0.6.1", optional = true }
 failure = "0.1"
-futures-preview = { version = "0.3.0-alpha.15", features = ["compat"] }
+futures-preview = { version = "0.3.0-alpha.18", features = ["compat", "async-await", "nightly"] }
 grpcio = { version = "0.5.0-alpha", features = [ "secure", "prost-codec" ], default-features = false }
-lazy_static = "0.2.1"
+kvproto = { git = "https://github.com/pingcap/kvproto.git", rev = "81e0c4635c2e28462fa0ad82c39f126448976de7", features = [ "prost-codec" ], default-features = false }
+lazy_static = "1"
 log = "0.3.9"
+regex = "1"
 serde = "1.0"
 serde_derive = "1.0"
-tokio-core = "0.1"
 tokio-timer = "0.2"
-
-[dependencies.kvproto]
-git = "https://github.com/pingcap/kvproto.git"
 
 [dependencies.prometheus]
 version = "0.4.2"
@@ -53,5 +50,7 @@ features = ["push", "process"]
 
 [dev-dependencies]
 tempdir = "0.3"
-runtime = "0.3.0-alpha.3"
-runtime-tokio = "0.3.0-alpha.3"
+runtime = { version = "0.3.0-alpha.6", default-features = false }
+runtime-tokio = "0.3.0-alpha.5"
+proptest = "0.9"
+proptest-derive = "0.1.0"
