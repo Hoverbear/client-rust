@@ -141,6 +141,8 @@ fn main() {
     ** Connection to TiVK
     */
 
+    // TODO: handle connection of Transactional client
+
     // Create a new connection
     let client = RawClient::new(config).unwrap();
 
