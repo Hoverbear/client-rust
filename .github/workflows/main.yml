@@ -50,6 +50,7 @@ jobs:
         options: "--network-alias pd.test"
       tikv:
         image: pingcap/tikv
+        ports:
           - 20160:20160
         options: "--network-alias tikv.test"
 
