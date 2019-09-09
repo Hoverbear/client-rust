@@ -39,15 +39,15 @@ jobs:
       run: cargo test --verbose --all --features integration-tests -- --nocapture
       env:
         PD_ADDR: "127.0.0.1:2379"
-      services:
-        pd:
-          image: pingcap/pd
-          ports:
-            - 2379:2379
-            - 2380:2380
-          options: "--network-alias pd.test"
-        tikv:
-          image: pingcap/tikv
-            - 20160:20160
-          options: "--network-alias tikv.test"
+    services:
+      pd:
+        image: pingcap/pd
+        ports:
+          - 2379:2379
+          - 2380:2380
+        options: "--network-alias pd.test"
+      tikv:
+        image: pingcap/tikv
+          - 20160:20160
+        options: "--network-alias tikv.test"
 
