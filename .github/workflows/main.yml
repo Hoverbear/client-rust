@@ -15,6 +15,7 @@ jobs:
     - name: Run tests 
       run: cargo test --verbose
   windows:
+    steps:
     - uses: actions/checkout@v1
     - name: Dependencies
       run: |
