@@ -9,7 +9,7 @@ jobs:
     - uses: actions/checkout@v1
     - name: Dependencies
       run: |
-        brew install protobuf go cmake
+        brew install protobuf go cmake rustup
     - name: Build
       run: cargo build --verbose
     - name: Run tests 
@@ -23,7 +23,8 @@ jobs:
         Set-ExecutionPolicy RemoteSigned -scope CurrentUser
         Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
         scoop bucket add extras
-        scoop install protobuf go cmake
+        scoop install protobuf go cmake rustup
+      shell: powershell
     - name: Build
       run: cargo build --all --verbose
     - name: Run tests
@@ -35,6 +36,12 @@ jobs:
     - name: Dependencies
       run: |
         sudo apt install --yes protobuf cmake go
+        rustup component add rustfmt
+        rustup component add clippy
+    - name: Format
+      run: cargo fmt -- --check
+    - name: Clippy
+      run: cargo clippy -- -D clippy::all
     - name: Build
       run: cargo build --verbose
     - name: Run tests 
