@@ -10,6 +10,7 @@ jobs:
     - name: Dependencies
       run: |
         brew install protobuf go cmake rustup
+        rustup default set nightly
     - name: Build
       run: cargo build --verbose
     - name: Run tests 
@@ -24,6 +25,7 @@ jobs:
         Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
         scoop bucket add extras
         scoop install protobuf go cmake rustup
+        rustup default set nightly
       shell: powershell
     - name: Build
       run: cargo build --all --verbose
@@ -36,12 +38,15 @@ jobs:
     - name: Dependencies
       run: |
         sudo apt install --yes protobuf cmake go
-        rustup component add rustfmt
-        rustup component add clippy
+        rustup default set nightly
     - name: Format
-      run: cargo fmt -- --check
+      run: |
+        rustup component add rustfmt
+        cargo fmt -- --check
     - name: Clippy
-      run: cargo clippy -- -D clippy::all
+      run: |
+        rustup component add clippy
+        cargo clippy -- -D clippy::all
     - name: Build
       run: cargo build --verbose
     - name: Run tests 
