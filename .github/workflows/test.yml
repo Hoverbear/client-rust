@@ -63,7 +63,7 @@ jobs:
       shell: bash
       run: |
         sudo apt update
-        sudo apt install --yes protobuf-compiler cmake golang libgflags2.2 libprotobuf10
+        sudo apt install --yes protobuf-compiler cmake golang clang llvm
     - name: Install Rust toolchain
       uses: actions-rs/toolchain@v1
       with:
