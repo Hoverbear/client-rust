@@ -3,7 +3,7 @@ name: Test
 on: [push]
 
 jobs:
-  mac:
+  Mac:
     runs-on: macOS-latest
     steps:
     - uses: actions/checkout@v1
@@ -19,7 +19,7 @@ jobs:
         command: test
         args: -- --nocapture
 
-  windows:
+  Windows:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
@@ -38,7 +38,7 @@ jobs:
         command: test
         args: -- --nocapture
 
-  ubuntu:
+  Ubuntu:
     runs-on: ubuntu-latest
     services:
       pd:

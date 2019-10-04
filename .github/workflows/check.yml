@@ -1,7 +1,24 @@
 on: push
-name: Clippy check
+name: Lints
 jobs:
-  clippy_check:
+  Clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Dependencies
+        shell: bash
+        run: |
+          sudo snap install protobuf cmake go
+      - uses: actions-rs/toolchain@v1
+        with:
+            toolchain: none
+      - run: rustup component add clippy
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features
+
+  Format:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -12,13 +29,12 @@ jobs:
       - id: component
         uses: actions-rs/components-nightly@v1
         with:
-          component: clippy
+          component: rustfmt
       - uses: actions-rs/toolchain@v1
         with:
-            toolchain: ${{ steps.component.outputs.toolchain }}
-            override: true
-      - run: rustup component add clippy
-      - uses: actions-rs/clippy-check@v1
+            toolchain: none
+      - run: rustup component add rustfmt
+      - uses: actions-rs/cargo@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features
+          command: fmt
+          args: --all -- --check
