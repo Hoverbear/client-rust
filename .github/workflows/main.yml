@@ -7,11 +7,10 @@ jobs:
     runs-on: macOS-latest
     steps:
     - uses: actions/checkout@v1
-    - name: System Dependencies
+    - name: Dependencies
       run: |
         brew install protobuf go cmake rustup
-        rustup-init --default-toolchain none -y
-        rustup default set nightly
+        rustup-init --default-toolchain `cat rust-toolchain` -y
     - name: Build
       run: cargo build --verbose
     - name: Run tests 
@@ -26,7 +25,7 @@ jobs:
         Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
         scoop bucket add extras
         scoop install protobuf go cmake rustup
-        rustup default set nightly
+        rustup default set $(Get-Content -Path ./rust-toolchain)
       shell: powershell
     - name: Build
       run: cargo build --all --verbose
@@ -39,7 +38,7 @@ jobs:
     - name: Dependencies
       run: |
         sudo apt install --yes protobuf cmake go
-        rustup default set nightly
+        rustup default set `cat rust-toolchain`
     - name: Format
       run: |
         rustup component add rustfmt
