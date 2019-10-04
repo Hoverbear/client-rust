@@ -1,6 +1,6 @@
-name: CI
+name: Test
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   mac:
@@ -62,6 +62,7 @@ jobs:
     - name: Dependencies
       shell: bash
       run: |
+        sudo apt update
         sudo apt install --yes protobuf cmake go
         rustup default `cat rust-toolchain`
     - name: Format
