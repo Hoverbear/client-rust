@@ -4,8 +4,9 @@ jobs:
   Clippy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - name: Dependencies
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Install Dependencies
         shell: bash
         run: |
           sudo apt update
@@ -22,16 +23,13 @@ jobs:
   Format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - name: Dependencies
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Install Dependencies
         shell: bash
         run: |
           sudo apt update
           sudo apt install --yes protobuf-compiler cmake golang
-      - id: component
-        uses: actions-rs/components-nightly@v1
-        with:
-          component: rustfmt
       - uses: actions-rs/toolchain@v1
         with:
             toolchain: beta

@@ -6,15 +6,18 @@ jobs:
   Mac:
     runs-on: macOS-latest
     steps:
-    - uses: actions/checkout@v1
+    - name: Checkout
+      uses: actions/checkout@v1
     - name: Dependencies
       shell: bash
       run: |
         brew install protobuf go cmake
-    - uses: actions-rs/toolchain@v1
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
       with:
           toolchain: beta
-    - uses: actions-rs/cargo@v1
+    - name: Test
+      uses: actions-rs/cargo@v1
       with:
         command: test
         args: -- --nocapture
@@ -22,18 +25,21 @@ jobs:
   Windows:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: Dependencies
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Install dependencies
       shell: powershell
       run: |
         Set-ExecutionPolicy RemoteSigned -scope CurrentUser
         Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
         scoop bucket add extras
         scoop install protobuf go cmake
-    - uses: actions-rs/toolchain@v1
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
       with:
           toolchain: beta
-    - uses: actions-rs/cargo@v1
+    - name: Test
+      uses: actions-rs/cargo@v1
       with:
         command: test
         args: -- --nocapture
@@ -51,16 +57,19 @@ jobs:
         ports:
           - 20160:20160
     steps:
-    - uses: actions/checkout@v1
-    - name: Dependencies
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Install dependencies
       shell: bash
       run: |
         sudo apt update
         sudo apt install --yes protobuf-compiler cmake golang
-    - uses: actions-rs/toolchain@v1
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
       with:
           toolchain: beta
-    - uses: actions-rs/cargo@v1
+    - name: Test
+      uses: actions-rs/cargo@v1
       with:
         command: test
         args: --features integration-tests -- --nocapture
