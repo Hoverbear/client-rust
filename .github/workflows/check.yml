@@ -8,6 +8,7 @@ jobs:
       - name: Dependencies
         shell: bash
         run: |
+          sudo apt update
           sudo apt install --yes protobuf cmake go
       - uses: actions-rs/toolchain@v1
         with:
@@ -25,6 +26,7 @@ jobs:
       - name: Dependencies
         shell: bash
         run: |
+          sudo apt update
           sudo apt install --yes protobuf cmake go
       - id: component
         uses: actions-rs/components-nightly@v1
