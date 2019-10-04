@@ -1,6 +1,6 @@
 name: Test
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   mac:
@@ -10,19 +10,14 @@ jobs:
     - name: Dependencies
       shell: bash
       run: |
-        brew install protobuf go cmake rustup
-        rustup-init --default-toolchain `cat rust-toolchain` -y
-        source ~/.cargo/env
-    - name: Build
-      shell: bash
-      run: |
-        source ~/.cargo/env
-        cargo build
-    - name: Run tests
-      shell: bash
-      run: |
-        source ~/.cargo/env
-        cargo test --all -- --nocapture
+        brew install protobuf go cmake
+    - uses: actions-rs/toolchain@v1
+      with:
+          toolchain: nightly
+    - uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: -- --nocapture
 
   windows:
     runs-on: windows-latest
@@ -34,16 +29,14 @@ jobs:
         Set-ExecutionPolicy RemoteSigned -scope CurrentUser
         Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
         scoop bucket add extras
-        scoop install protobuf go cmake rustup
-        rustup default $(Get-Content -Path ./rust-toolchain)
-    - name: Build
-      shell: powershell
-      run: |
-        cargo build --all
-    - name: Run tests
-      shell: powershell
-      run: |
-        cargo test --all -- --nocapture
+        scoop install protobuf go cmake
+    - uses: actions-rs/toolchain@v1
+      with:
+          toolchain: nightly
+    - uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: -- --nocapture
 
   ubuntu:
     runs-on: ubuntu-latest
@@ -62,25 +55,12 @@ jobs:
     - name: Dependencies
       shell: bash
       run: |
-        sudo apt update
         sudo apt install --yes protobuf cmake go
-        rustup default `cat rust-toolchain`
-    - name: Format
-      shell: bash
-      run: |
-        rustup component add rustfmt
-        cargo fmt -- --check
-    - name: Clippy
-      shell: bash
-      run: |
-        rustup component add clippy
-        cargo clippy -- -D clippy::all
-    - name: Build
-      shell: bash
-      run: |
-        cargo build
-    - name: Run tests 
-      shell: bash
-      run: |
-        cargo test --all --features integration-tests -- --nocapture
+    - uses: actions-rs/toolchain@v1
+      with:
+          toolchain: nightly
+    - uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --features integration-tests -- --nocapture
 
