@@ -22,7 +22,7 @@ jobs:
       shell: bash
       run: |
         source ~/.cargo/env
-        cargo test --verbose --all --features integration-tests -- --nocapture
+        cargo test --verbose --all -- --nocapture
 
   windows:
     runs-on: windows-latest
@@ -43,7 +43,7 @@ jobs:
     - name: Run tests
       shell: powershell
       run: |
-        cargo test --verbose --all --features integration-tests -- --nocapture
+        cargo test --verbose --all -- --nocapture
 
   ubuntu:
     runs-on: ubuntu-latest
