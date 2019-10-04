@@ -15,10 +15,12 @@ jobs:
       shell: bash
     - name: Build
       run: |
+        source ~/.cargo/env
         cargo build --verbose
       shell: bash
     - name: Run tests 
       run: |
+        source ~/.cargo/env
         cargo test --verbose
       shell: bash
   windows:
