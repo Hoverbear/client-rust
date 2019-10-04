@@ -12,7 +12,7 @@ jobs:
           sudo apt install --yes protobuf-compiler cmake golang
       - uses: actions-rs/toolchain@v1
         with:
-            toolchain: none
+            toolchain: beta
       - run: rustup component add clippy
       - uses: actions-rs/clippy-check@v1
         with:
@@ -34,7 +34,7 @@ jobs:
           component: rustfmt
       - uses: actions-rs/toolchain@v1
         with:
-            toolchain: none
+            toolchain: beta
       - run: rustup component add rustfmt
       - uses: actions-rs/cargo@v1
         with:
