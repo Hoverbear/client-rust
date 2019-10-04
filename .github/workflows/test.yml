@@ -55,7 +55,7 @@ jobs:
     - name: Dependencies
       shell: bash
       run: |
-        sudo snap install protobuf cmake go
+        sudo apt install --yes protobuf cmake go
     - uses: actions-rs/toolchain@v1
       with:
           toolchain: nightly
