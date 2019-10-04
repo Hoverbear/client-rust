@@ -2,13 +2,16 @@ on: push
 name: Clippy check
 jobs:
   clippy_check:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v1
       - name: Dependencies
-        shell: bash
+        shell: powershell
         run: |
-          sudo apt install --yes protobuf cmake go
+          Set-ExecutionPolicy RemoteSigned -scope CurrentUser
+          Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
+          scoop bucket add extras
+          scoop install protobuf go cmake
       - id: component
         uses: actions-rs/components-nightly@v1
         with:
