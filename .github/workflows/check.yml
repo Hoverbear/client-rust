@@ -9,7 +9,7 @@ jobs:
         shell: bash
         run: |
           sudo apt update
-          sudo apt install --yes protobuf cmake go
+          sudo apt install --yes protobuf-compiler cmake golang
       - uses: actions-rs/toolchain@v1
         with:
             toolchain: none
@@ -27,7 +27,7 @@ jobs:
         shell: bash
         run: |
           sudo apt update
-          sudo apt install --yes protobuf cmake go
+          sudo apt install --yes protobuf-compiler cmake golang
       - id: component
         uses: actions-rs/components-nightly@v1
         with:
