@@ -21,8 +21,18 @@ jobs:
     - name: Run tests 
       run: |
         source ~/.cargo/env
-        cargo test --verbose
+        cargo test --verbose --all --features integration-tests -- --nocapture
       shell: bash
+      services:
+        pd:
+          image: pingcap/pd
+          ports:
+            - 2379:2379
+            - 2380:2380
+        tikv:
+          image: pingcap/tikv
+          ports:
+            - 20160:20160
   windows:
     runs-on: windows-latest
     steps:
@@ -41,8 +51,18 @@ jobs:
       shell: powershell
     - name: Run tests
       run: |
-        cargo test --all --verbose -- --nocapture
+        cargo test --verbose --all --features integration-tests -- --nocapture
       shell: powershell
+      services:
+        pd:
+          image: pingcap/pd
+          ports:
+            - 2379:2379
+            - 2380:2380
+        tikv:
+          image: pingcap/tikv
+          ports:
+            - 20160:20160
   ubuntu:
     runs-on: ubuntu-latest
     steps:
@@ -70,18 +90,14 @@ jobs:
       run: |
         cargo test --verbose --all --features integration-tests -- --nocapture
       shell: bash
-      env:
-        PD_ADDR: "127.0.0.1:2379"
-    # services:
-    #   pd:
-    #     image: pingcap/pd
-    #     ports:
-    #       - 2379:2379
-    #       - 2380:2380
-    #     options: "--network-alias pd.test"
-    #   tikv:
-    #     image: pingcap/tikv
-    #     ports:
-    #       - 20160:20160
-    #     options: "--network-alias tikv.test"
+      services:
+        pd:
+          image: pingcap/pd
+          ports:
+            - 2379:2379
+            - 2380:2380
+        tikv:
+          image: pingcap/tikv
+          ports:
+            - 20160:20160
 
