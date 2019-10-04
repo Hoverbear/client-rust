@@ -1,5 +1,7 @@
-on: push
 name: Lints
+
+on: push
+
 jobs:
   Clippy:
     runs-on: ubuntu-latest
@@ -10,7 +12,7 @@ jobs:
         shell: bash
         run: |
           sudo apt update
-          sudo apt install --yes protobuf-compiler cmake golang
+          sudo apt install --yes protobuf-compiler cmake golang libprotobuf-dev libgflags-dev
       - uses: actions-rs/toolchain@v1
         with:
             toolchain: beta
@@ -29,7 +31,7 @@ jobs:
         shell: bash
         run: |
           sudo apt update
-          sudo apt install --yes protobuf-compiler cmake golang
+          sudo apt install --yes protobuf-compiler cmake golang libprotobuf-dev libgflags-dev
       - uses: actions-rs/toolchain@v1
         with:
             toolchain: beta
