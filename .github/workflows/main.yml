@@ -12,10 +12,15 @@ jobs:
         brew install protobuf go cmake rustup
         rustup-init --default-toolchain `cat rust-toolchain` -y
         source ~/.cargo/env
+      shell: bash
     - name: Build
-      run: cargo build --verbose
+      run: |
+        cargo build --verbose
+      shell: bash
     - name: Run tests 
-      run: cargo test --verbose
+      run: |
+        cargo test --verbose
+      shell: bash
   windows:
     runs-on: windows-latest
     steps:
@@ -29,9 +34,13 @@ jobs:
         rustup default set $(Get-Content -Path ./rust-toolchain)
       shell: powershell
     - name: Build
-      run: cargo build --all --verbose
+      run: |
+        cargo build --all --verbose
+      shell: powershell
     - name: Run tests
-      run: cargo test --all --verbose -- --nocapture
+      run: |
+        cargo test --all --verbose -- --nocapture
+      shell: powershell
   ubuntu:
     runs-on: ubuntu-latest
     steps:
@@ -40,18 +49,25 @@ jobs:
       run: |
         sudo apt install --yes protobuf cmake go
         rustup default set `cat rust-toolchain`
+      shell: bash
     - name: Format
       run: |
         rustup component add rustfmt
         cargo fmt -- --check
+      shell: bash
     - name: Clippy
       run: |
         rustup component add clippy
         cargo clippy -- -D clippy::all
+      shell: bash
     - name: Build
-      run: cargo build --verbose
+      run: |
+        cargo build --verbose
+      shell: bash
     - name: Run tests 
-      run: cargo test --verbose --all --features integration-tests -- --nocapture
+      run: |
+        cargo test --verbose --all --features integration-tests -- --nocapture
+      shell: bash
       env:
         PD_ADDR: "127.0.0.1:2379"
     # services:
