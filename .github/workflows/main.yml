@@ -7,11 +7,10 @@ jobs:
     runs-on: macOS-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Dependencies
+    - name: System Dependencies
       run: |
         brew install protobuf go cmake rustup
-        rustup-init --default-toolchain none
-        source ~/.cargo/env
+        rustup-init --default-toolchain none -y
         rustup default set nightly
     - name: Build
       run: cargo build --verbose
@@ -55,16 +54,16 @@ jobs:
       run: cargo test --verbose --all --features integration-tests -- --nocapture
       env:
         PD_ADDR: "127.0.0.1:2379"
-    services:
-      pd:
-        image: pingcap/pd
-        ports:
-          - 2379:2379
-          - 2380:2380
-        options: "--network-alias pd.test"
-      tikv:
-        image: pingcap/tikv
-        ports:
-          - 20160:20160
-        options: "--network-alias tikv.test"
+    # services:
+    #   pd:
+    #     image: pingcap/pd
+    #     ports:
+    #       - 2379:2379
+    #       - 2380:2380
+    #     options: "--network-alias pd.test"
+    #   tikv:
+    #     image: pingcap/tikv
+    #     ports:
+    #       - 20160:20160
+    #     options: "--network-alias tikv.test"
 
