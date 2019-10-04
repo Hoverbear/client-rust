@@ -35,7 +35,7 @@ jobs:
         Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
         scoop bucket add extras
         scoop install protobuf go cmake rustup
-        rustup default set $(Get-Content -Path ./rust-toolchain)
+        rustup default $(Get-Content -Path ./rust-toolchain)
     - name: Build
       shell: powershell
       run: |
@@ -63,7 +63,7 @@ jobs:
       shell: bash
       run: |
         sudo apt install --yes protobuf cmake go
-        rustup default set `cat rust-toolchain`
+        rustup default `cat rust-toolchain`
     - name: Format
       shell: bash
       run: |
