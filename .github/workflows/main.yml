@@ -17,12 +17,12 @@ jobs:
       shell: bash
       run: |
         source ~/.cargo/env
-        cargo build --verbose
-    - name: Run tests 
+        cargo build
+    - name: Run tests
       shell: bash
       run: |
         source ~/.cargo/env
-        cargo test --verbose --all -- --nocapture
+        cargo test --all -- --nocapture
 
   windows:
     runs-on: windows-latest
@@ -39,11 +39,11 @@ jobs:
     - name: Build
       shell: powershell
       run: |
-        cargo build --all --verbose
+        cargo build --all
     - name: Run tests
       shell: powershell
       run: |
-        cargo test --verbose --all -- --nocapture
+        cargo test --all -- --nocapture
 
   ubuntu:
     runs-on: ubuntu-latest
@@ -77,10 +77,9 @@ jobs:
     - name: Build
       shell: bash
       run: |
-        cargo build --verbose
+        cargo build
     - name: Run tests 
       shell: bash
       run: |
-        cargo test --verbose --all --features integration-tests -- --nocapture
-
+        cargo test --all --features integration-tests -- --nocapture
 
