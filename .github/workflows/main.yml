@@ -5,65 +5,45 @@ on: [push]
 jobs:
   mac:
     runs-on: macOS-latest
-    services:
-      pd:
-        image: pingcap/pd
-        ports:
-          - 2379:2379
-          - 2380:2380
-      tikv:
-        image: pingcap/tikv
-        ports:
-          - 20160:20160
     steps:
     - uses: actions/checkout@v1
     - name: Dependencies
+      shell: bash
       run: |
         brew install protobuf go cmake rustup
         rustup-init --default-toolchain `cat rust-toolchain` -y
         source ~/.cargo/env
-      shell: bash
     - name: Build
+      shell: bash
       run: |
         source ~/.cargo/env
         cargo build --verbose
-      shell: bash
     - name: Run tests 
+      shell: bash
       run: |
         source ~/.cargo/env
         cargo test --verbose --all --features integration-tests -- --nocapture
-      shell: bash
 
   windows:
     runs-on: windows-latest
-    services:
-      pd:
-        image: pingcap/pd
-        ports:
-          - 2379:2379
-          - 2380:2380
-      tikv:
-        image: pingcap/tikv
-        ports:
-          - 20160:20160
     steps:
     - uses: actions/checkout@v1
     - name: Dependencies
+      shell: powershell
       run: |
         Set-ExecutionPolicy RemoteSigned -scope CurrentUser
         Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
         scoop bucket add extras
         scoop install protobuf go cmake rustup
         rustup default set $(Get-Content -Path ./rust-toolchain)
-      shell: powershell
     - name: Build
+      shell: powershell
       run: |
         cargo build --all --verbose
-      shell: powershell
     - name: Run tests
+      shell: powershell
       run: |
         cargo test --verbose --all --features integration-tests -- --nocapture
-      shell: powershell
 
   ubuntu:
     runs-on: ubuntu-latest
@@ -80,27 +60,27 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Dependencies
+      shell: bash
       run: |
         sudo apt install --yes protobuf cmake go
         rustup default set `cat rust-toolchain`
-      shell: bash
     - name: Format
+      shell: bash
       run: |
         rustup component add rustfmt
         cargo fmt -- --check
-      shell: bash
     - name: Clippy
+      shell: bash
       run: |
         rustup component add clippy
         cargo clippy -- -D clippy::all
-      shell: bash
     - name: Build
+      shell: bash
       run: |
         cargo build --verbose
-      shell: bash
     - name: Run tests 
+      shell: bash
       run: |
         cargo test --verbose --all --features integration-tests -- --nocapture
-      shell: bash
 
 
