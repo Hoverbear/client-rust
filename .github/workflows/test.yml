@@ -33,7 +33,7 @@ jobs:
         Set-ExecutionPolicy RemoteSigned -scope CurrentUser
         Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
         scoop bucket add extras
-        scoop install protobuf go cmake
+        scoop install protobuf go cmake clang llvm
     - name: Install Rust toolchain
       uses: actions-rs/toolchain@v1
       with:
